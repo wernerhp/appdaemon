@@ -2,12 +2,14 @@ import traceback
 import datetime
 from datetime import timedelta
 import pytz
-import astral
 import random
 import uuid
 import re
 import asyncio
 import logging
+
+from astral.location import Location
+
 from collections import OrderedDict
 
 import appdaemon.utils as utils
@@ -215,7 +217,7 @@ class Scheduler:
         if longitude < -180 or longitude > 180:
             raise ValueError("Longitude needs to be -180 .. 180")
 
-        self.location = astral.location.Location(("", "", latitude, longitude, self.AD.tz.zone))
+        self.location = Location(("", "", latitude, longitude, self.AD.tz.zone))
 
     def sun(self, type, offset):
         if offset < 0:
@@ -239,7 +241,7 @@ class Scheduler:
                 next_rising_dt = self.location.sunrise(date=dt, local=False, observer_elevation=self.AD.elevation)
                 if next_rising_dt > self.now:
                     break
-            except astral.AstralError:
+            except ValueError:
                 pass
             mod += 1
 
@@ -253,7 +255,7 @@ class Scheduler:
                 next_setting_dt = self.location.sunset(date=dt, local=False, observer_elevation=self.AD.elevation)
                 if next_setting_dt > self.now:
                     break
-            except astral.AstralError:
+            except ValueError:
                 pass
             mod += 1
 
